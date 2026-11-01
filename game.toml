@@ -69,3 +69,13 @@ required_disc_fp = "ae4b1cd6118cabd37864a3b437ce4c701b8317add8febd52b7b7e9b56e21
 # Override for testing with PSX_GUEST_CYCLE_SCALE=<n>.
 [timing]
 guest_cycle_scale = 3
+
+# The tm4u.enhancement.widescreen mod widens the view to the window's shape.
+# Keep the HUD and menus at their own proportions, pinned to the wide-frame
+# corners. Runtime-only; no regenerated game code needed.
+[widescreen]
+hud_sprt_squash = true
+auto_ui_squash  = true
+# TM4 has no sprite-tag hooks, so treat frames with live GTE 3D as gameplay;
+# without this every frame presents as a 4:3 menu frame.
+gte_game_mode   = true

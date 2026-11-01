@@ -19,6 +19,11 @@ Changes from upstream:
 - 8 MB main RAM is on by default (`mods/preloaded`). The mod shows a black screen without it.
 - `[timing] guest_cycle_scale = 3` is the DuckStation-style overclock the mod's 45/60 FPS
   modes need. Set `PSX_GUEST_CYCLE_SCALE=<n>` to try other values.
+- Widescreen that fills the screen: the title mod `tm4u.enhancement.widescreen`
+  (`src/tm4u_widescreen.c`, on by default) renders a wider 3D view, 16:10 on the Steam
+  Deck and 16:9 on a TV, with no stretching. `[widescreen] gte_game_mode = true` lets
+  TM4's 3D frames use it; menus and FMVs stay 4:3. Turn it off on the launcher's Mods
+  page for the original framing.
 - Netplay is off, so this build never joins the public TwistedMetal4Recomp lobby.
 - Release CI builds Linux x64 only.
 

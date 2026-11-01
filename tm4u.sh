@@ -14,6 +14,7 @@
 #   run        start the compiled game
 #   build-test compile a test build with the TCP debug server (build-mac-test/)
 #   run-test   start the test build headless, debug server on port 4370
+#   run-test-gl same, but OpenGL in a hidden window (present_shot works)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -64,6 +65,10 @@ case "$step" in
   run-test)
     cd build-mac-test
     exec ./TwistedMetal4_Recompiled --no-launcher --headless --disc "$DISC" --debug-port 4370 "$@"
+    ;;
+  run-test-gl)
+    cd build-mac-test
+    exec ./TwistedMetal4_Recompiled --no-launcher --hidden-window --disc "$DISC" --debug-port 4370 "$@"
     ;;
   *)
     sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'

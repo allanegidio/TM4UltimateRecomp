@@ -1,0 +1,22 @@
+format_version = 5
+id = "tm4u.enhancement.widescreen"
+version = "1.0.0"
+name = "Widescreen"
+author = "TM4UltimateRecomp"
+description = "Fills the screen instead of 4:3 with black bars: 16:10 on the Steam Deck, 16:9 on a TV. The 3D view gets wider; the HUD and menus keep their proportions. Objects may pop in at the screen edges. FMVs stay 4:3."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SCUS-94560"
+
+[[feature]]
+id = "widescreen"
+name = "Widescreen (fit to screen)"
+description = "On by default. Widens the 3D view to the window's shape (16:10 on the Steam Deck). Turn it off for the original 4:3 framing."
+group = "Visual"
+default_enabled = true
+
+[[plugin]]
+feature = "widescreen"
+id = "tm4u.widescreen"
