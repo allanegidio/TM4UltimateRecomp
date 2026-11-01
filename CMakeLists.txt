@@ -32,10 +32,6 @@ psxrecomp_add_game_runtime(psx-runtime
     PRELOADED_MODS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded"
 )
 
-# Title plugin: widescreen is mod-owned on PSX (see mods/preloaded).
-target_sources(psx-runtime PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/tm4u_widescreen.c")
-
 # >>> psxrecomp:recomp-net-headers (managed by tools/update_cmake.{sh,ps1})
 # runtime/src/main.cpp includes recomp_net/host_relay.h unconditionally (a
 # plain-C types header). With PSX_NETPLAY off nothing adds recomp-net's include
