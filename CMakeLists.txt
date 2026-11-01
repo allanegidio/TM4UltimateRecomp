@@ -9,19 +9,16 @@ set(PSXRECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/psxrecomp" CACHE PATH
 # Setup-host CI requires WIZARD_CMAKE_BLOCK / ENABLE_SETUP_WIZARD (FORCE_SETUP_HOST
 # alone does not open first-run / Generate & rebuild).
 # recomp-ui submodule present (PSX_RECOMP_UI defaults ON).
-# Full netplay UI — enable after adding recomp-ui + testing:
-if(EXISTS "${PSXRECOMP_ROOT}/lib/recomp-net/CMakeLists.txt")
-    set(PSX_NETPLAY ON CACHE BOOL
-        "Link recomp-net delay-sync (opt-in; needs recomp-net)" FORCE)
-endif()
+# Netplay stays off: this is a private modded build, so it must not join the
+# public TwistedMetal4Recomp lobby.
 set(PSX_SETUP_WIZARD ON CACHE BOOL
     "Advertise first-run setup wizard + Generate & rebuild in recomp-ui" FORCE)
 include("${PSXRECOMP_ROOT}/runtime/runtime.cmake")
 
 psxrecomp_add_game_runtime(psx-runtime
-    ENABLE_NETPLAY_IF_PRESENT
-    NETPLAY_LOBBY_URL "ws://netplay.retcomm.net:8765"
     ENABLE_SETUP_WIZARD
+    # Kept as upstream: the exe name (TwistedMetal4_Recompiled) is derived from
+    # it and the packaging scripts expect that name. game.toml sets the title.
     WINDOW_TITLE "TwistedMetal4 Recompiled"
     DEFAULT_GAME_CONFIG_PATH "game.toml"
     MAX_PLAYERS 4
@@ -30,6 +27,9 @@ psxrecomp_add_game_runtime(psx-runtime
     GEN_MARKER "generated/SCUS_945.60_dispatch.c"
     GEN_FULL_GLOB "generated/SCUS_945.60_full_*.c"
     CODEGEN_SETUP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/codegen_setup.c"
+    # Overrides the builtin psx.enhancement.8mb-ram so it is on by default:
+    # the inSAMity mod shows a black screen without 8 MB of main RAM.
+    PRELOADED_MODS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/mods/preloaded"
 )
 
 # >>> psxrecomp:recomp-net-headers (managed by tools/update_cmake.{sh,ps1})

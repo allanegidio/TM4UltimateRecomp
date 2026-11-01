@@ -77,8 +77,7 @@ starvation_dump.jsonl
 !/catalog_identity.json
 !/disc_probe.json
 
-# --- PSXRecomp (project studio) ---
-/analysis/
-
-# --- PSXRecomp setup-host (project studio) ---
-/generated/
+# Local tools and probe output for tm4u.sh
+/.tools/
+/probe/
+/toolchain/

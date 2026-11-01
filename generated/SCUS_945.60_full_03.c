@@ -6156,12 +6156,6 @@ void func_80017944(CPUState* cpu)
         uint32_t _cont = cpu->pc; cpu->pc = 0;
         switch (_cont) {
             case 0x80017AB8u: goto block_80017AB8;
-            case 0x80017B44u: goto block_80017B44;
-            case 0x80017B70u: goto block_80017B70;
-            case 0x80017B9Cu: goto block_80017B9C;
-            case 0x80017BA8u: goto block_80017BA8;
-            case 0x80017C00u: goto block_80017C00;
-            case 0x80017C14u: goto block_80017C14;
             case 0x80017968u: goto block_80017968;
             case 0x80017998u: goto block_80017998;
             case 0x8001799Cu: goto block_8001799C;
@@ -6193,36 +6187,11 @@ void func_80017944(CPUState* cpu)
             case 0x80017AD0u: goto block_80017AD0;
             case 0x80017ADCu: goto block_80017ADC;
             case 0x80017AF0u: goto block_80017AF0;
-            case 0x80017B00u: goto block_80017B00;
-            case 0x80017B08u: goto block_80017B08;
-            case 0x80017B18u: goto block_80017B18;
-            case 0x80017B20u: goto block_80017B20;
-            case 0x80017B38u: goto block_80017B38;
-            case 0x80017B78u: goto block_80017B78;
-            case 0x80017BB0u: goto block_80017BB0;
-            case 0x80017BB8u: goto block_80017BB8;
-            case 0x80017BD0u: goto block_80017BD0;
-            case 0x80017BE0u: goto block_80017BE0;
-            case 0x80017C0Cu: goto block_80017C0C;
-            case 0x80017C24u: goto block_80017C24;
-            case 0x80017C28u: goto block_80017C28;
-            case 0x80017C34u: goto block_80017C34;
-            case 0x80017C48u: goto block_80017C48;
-            case 0x80017C4Cu: goto block_80017C4C;
-            case 0x80017C60u: goto block_80017C60;
-            case 0x80017C6Cu: goto block_80017C6C;
-            case 0x80017C74u: goto block_80017C74;
-            case 0x80017C7Cu: goto block_80017C7C;
-            case 0x80017C80u: goto block_80017C80;
-            case 0x80017CA0u: goto block_80017CA0;
-            case 0x80017CACu: goto block_80017CAC;
-            case 0x80017CB4u: goto block_80017CB4;
-            case 0x80017CB8u: goto block_80017CB8;
             default: break;
         }
     }
     debug_server_log_call_entry(0x80017944u);
-    /* Address: 0x80017944, Size: 916 bytes, Blocks: 64 */
+    /* Address: 0x80017944, Size: 444 bytes, Blocks: 33 */
 
 block_80017944:
 #ifndef PSX_NO_DEBUG_TOOLS
@@ -6317,7 +6286,7 @@ block_80017944:
         psx_cyc_bb_defer_flush();
 #endif
         psx_check_interrupts_at(cpu, 0x80017B00u);
-        goto block_80017B00;  /* taken */
+        cpu->pc = 0x80017B00u; return;  /* CPS taken: split */
     } else {
 #ifdef PSX_ENABLE_BLOCK_CYCLES
         psx_cyc_bb_defer_flush();
@@ -7765,9 +7734,8 @@ block_80017AF0:
     cosim_instr(0x80017AF4u);
 #endif
     #ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0x40001u);
+    psx_cyc_step(cpu, 0x0u);
 #endif
-    int _bc_80017AF8 = (cpu->gpr[18] != cpu->gpr[0]);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
 #ifdef PSX_ENABLE_BLOCK_CYCLES
     psx_cyc_step(cpu, 0x1u);
@@ -7776,19 +7744,24 @@ block_80017AF0:
 #ifdef PSX_COSIM
     cosim_instr(0x80017AFCu);
 #endif
-    if (_bc_80017AF8) {
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-        psx_cyc_bb_defer_flush();
+    psx_cyc_bb_defer_flush();
 #endif
-        psx_check_interrupts_at(cpu, 0x80017B08u);
-        goto block_80017B08;  /* taken */
-    } else {
-#ifdef PSX_ENABLE_BLOCK_CYCLES
-        psx_cyc_bb_defer_flush();
+    psx_check_interrupts_at(cpu, 0x8006B52Cu);
+    cpu->pc = 0x8006B52Cu; return;  /* CPS j: split */
+    if (!psx_game_text_native_ok(0x80017B00u)) { cpu->pc = 0x80017B00u; return; }  /* stale-static guard */
+    func_80017B00(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
+void func_80017B00(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
 #endif
-        psx_check_interrupts_at(cpu, 0x80017B00u);
-        goto block_80017B00;  /* not taken */
-    }
+    debug_server_log_call_entry(0x80017B00u);
+    /* Address: 0x80017B00, Size: 8 bytes, Blocks: 1 */
 
 block_80017B00:
 #ifndef PSX_NO_DEBUG_TOOLS
@@ -7819,7 +7792,54 @@ block_80017B00:
     psx_cyc_bb_defer_flush();
 #endif
     psx_check_interrupts_at(cpu, 0x80017CB8u);
-    goto block_80017CB8;  /* j */
+    cpu->pc = 0x80017CB8u; return;  /* CPS j: split */
+    if (!psx_game_text_native_ok(0x80017B08u)) { cpu->pc = 0x80017B08u; return; }  /* stale-static guard */
+    func_80017B08(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
+void func_80017B08(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
+#endif
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80017B44u: goto block_80017B44;
+            case 0x80017B70u: goto block_80017B70;
+            case 0x80017B9Cu: goto block_80017B9C;
+            case 0x80017BA8u: goto block_80017BA8;
+            case 0x80017C00u: goto block_80017C00;
+            case 0x80017C14u: goto block_80017C14;
+            case 0x80017B18u: goto block_80017B18;
+            case 0x80017B20u: goto block_80017B20;
+            case 0x80017B38u: goto block_80017B38;
+            case 0x80017B78u: goto block_80017B78;
+            case 0x80017BB0u: goto block_80017BB0;
+            case 0x80017BB8u: goto block_80017BB8;
+            case 0x80017BD0u: goto block_80017BD0;
+            case 0x80017BE0u: goto block_80017BE0;
+            case 0x80017C0Cu: goto block_80017C0C;
+            case 0x80017C24u: goto block_80017C24;
+            case 0x80017C28u: goto block_80017C28;
+            case 0x80017C34u: goto block_80017C34;
+            case 0x80017C48u: goto block_80017C48;
+            case 0x80017C4Cu: goto block_80017C4C;
+            case 0x80017C60u: goto block_80017C60;
+            case 0x80017C6Cu: goto block_80017C6C;
+            case 0x80017C74u: goto block_80017C74;
+            case 0x80017C7Cu: goto block_80017C7C;
+            case 0x80017C80u: goto block_80017C80;
+            case 0x80017CA0u: goto block_80017CA0;
+            case 0x80017CACu: goto block_80017CAC;
+            case 0x80017CB4u: goto block_80017CB4;
+            default: break;
+        }
+    }
+    debug_server_log_call_entry(0x80017B08u);
+    /* Address: 0x80017B08, Size: 432 bytes, Blocks: 29 */
 
 block_80017B08:
 #ifndef PSX_NO_DEBUG_TOOLS
@@ -9207,7 +9227,21 @@ block_80017CB4:
 #ifdef PSX_COSIM
     cosim_instr(0x80017CB4u);
 #endif
-    /* fall through to block_80017CB8 */
+    if (!psx_game_text_native_ok(0x80017CB8u)) { cpu->pc = 0x80017CB8u; return; }  /* stale-static guard */
+    func_80017CB8(cpu); return;  /* fallthrough to split piece */
+    if (!psx_game_text_native_ok(0x80017CB8u)) { cpu->pc = 0x80017CB8u; return; }  /* stale-static guard */
+    func_80017CB8(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
+void func_80017CB8(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
+#endif
+    debug_server_log_call_entry(0x80017CB8u);
+    /* Address: 0x80017CB8, Size: 32 bytes, Blocks: 1 */
 
 block_80017CB8:
 #ifndef PSX_NO_DEBUG_TOOLS
@@ -9285,15 +9319,8 @@ void func_80017CD8(CPUState* cpu)
     __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
     psx_cyc_bb_defer_begin();
 #endif
-    if (cpu->pc != 0u) {
-        uint32_t _cont = cpu->pc; cpu->pc = 0;
-        switch (_cont) {
-            case 0x80017CE8u: goto block_80017CE8;
-            default: break;
-        }
-    }
     debug_server_log_call_entry(0x80017CD8u);
-    /* Address: 0x80017CD8, Size: 32 bytes, Blocks: 2 */
+    /* Address: 0x80017CD8, Size: 8 bytes, Blocks: 1 */
 
 block_80017CD8:
 #ifndef PSX_NO_DEBUG_TOOLS
@@ -9303,26 +9330,57 @@ block_80017CD8:
     cosim_block(0x80017CD8u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    if (psx_slice_block(cpu, 0x80017CD8u, 4u, 0)) return;
+    if (psx_slice_block(cpu, 0x80017CD8u, 2u, 0)) return;
 #endif
-#ifdef PSX_ENABLE_BLOCK_CYCLES
+    #ifdef PSX_ENABLE_BLOCK_CYCLES
     psx_icache_fetch(cpu, 0x80017CD8u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0x20000000u);
+    psx_cyc_step(cpu, 0x0u);
 #endif
-    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + -8;
-    PGXP_ALU(0x27BDFFF8u, cpu->gpr[29], _pgx1, 0xFFFFFFF8u); }  /* 0x80017CD8: 0x27BDFFF8 */
-#ifdef PSX_COSIM
-    cosim_instr(0x80017CD8u);
-#endif
+    /* delay slot (always executes) */
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0xA0000000u);
+    psx_cyc_step(cpu, 0x1u);
 #endif
-    { uint32_t _pgxa = cpu->gpr[29] + 16; g_debug_last_store_pc = 0x80017CDCu; psx_store_cycle_barrier(); cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
-    PGXP_STORE(0xAFBF0010u, _pgxa, cpu->gpr[31]); }  /* 0x80017CDC: 0xAFBF0010 */
+    /* nop */  /* 0x80017CDC: 0x00000000 */
 #ifdef PSX_COSIM
     cosim_instr(0x80017CDCu);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_bb_defer_flush();
+#endif
+    psx_check_interrupts_at(cpu, 0x8006D110u);
+    cpu->pc = 0x8006D110u; return;  /* CPS j: split */
+    if (!psx_game_text_native_ok(0x80017CE0u)) { cpu->pc = 0x80017CE0u; return; }  /* stale-static guard */
+    func_80017CE0(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
+void func_80017CE0(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
+#endif
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80017CE8u: goto block_80017CE8;
+            default: break;
+        }
+    }
+    debug_server_log_call_entry(0x80017CE0u);
+    /* Address: 0x80017CE0, Size: 24 bytes, Blocks: 2 */
+
+block_80017CE0:
+#ifndef PSX_NO_DEBUG_TOOLS
+    debug_server_cyc_observe(0x80017CE0u);
+#endif
+#ifdef PSX_COSIM
+    cosim_block(0x80017CE0u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    if (psx_slice_block(cpu, 0x80017CE0u, 2u, 0)) return;
 #endif
     #ifdef PSX_ENABLE_BLOCK_CYCLES
     psx_icache_fetch(cpu, 0x80017CE0u);
@@ -9745,6 +9803,49 @@ void func_80017D60(CPUState* cpu)
     __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
     psx_cyc_bb_defer_begin();
 #endif
+    debug_server_log_call_entry(0x80017D60u);
+    /* Address: 0x80017D60, Size: 8 bytes, Blocks: 1 */
+
+block_80017D60:
+#ifndef PSX_NO_DEBUG_TOOLS
+    debug_server_cyc_observe(0x80017D60u);
+#endif
+#ifdef PSX_COSIM
+    cosim_block(0x80017D60u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    if (psx_slice_block(cpu, 0x80017D60u, 2u, 0)) return;
+#endif
+    #ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_icache_fetch(cpu, 0x80017D60u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_step(cpu, 0x0u);
+#endif
+    /* delay slot (always executes) */
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_step(cpu, 0x1u);
+#endif
+    /* nop */  /* 0x80017D64: 0x00000000 */
+#ifdef PSX_COSIM
+    cosim_instr(0x80017D64u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_bb_defer_flush();
+#endif
+    psx_check_interrupts_at(cpu, 0x8006D228u);
+    cpu->pc = 0x8006D228u; return;  /* CPS j: split */
+    if (!psx_game_text_native_ok(0x80017D68u)) { cpu->pc = 0x80017D68u; return; }  /* stale-static guard */
+    func_80017D68(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
+void func_80017D68(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
+#endif
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
         switch (_cont) {
@@ -9766,37 +9867,21 @@ void func_80017D60(CPUState* cpu)
             default: break;
         }
     }
-    debug_server_log_call_entry(0x80017D60u);
-    /* Address: 0x80017D60, Size: 224 bytes, Blocks: 16 */
+    debug_server_log_call_entry(0x80017D68u);
+    /* Address: 0x80017D68, Size: 216 bytes, Blocks: 16 */
 
-block_80017D60:
+block_80017D68:
 #ifndef PSX_NO_DEBUG_TOOLS
-    debug_server_cyc_observe(0x80017D60u);
+    debug_server_cyc_observe(0x80017D68u);
 #endif
 #ifdef PSX_COSIM
-    cosim_block(0x80017D60u);
+    cosim_block(0x80017D68u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    if (psx_slice_block(cpu, 0x80017D60u, 6u, 0)) return;
+    if (psx_slice_block(cpu, 0x80017D68u, 4u, 0)) return;
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_icache_fetch(cpu, 0x80017D60u);
-#endif
-#ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0x20000000u);
-#endif
-    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + -16;
-    PGXP_ALU(0x27BDFFF0u, cpu->gpr[29], _pgx1, 0xFFFFFFF0u); }  /* 0x80017D60: 0x27BDFFF0 */
-#ifdef PSX_COSIM
-    cosim_instr(0x80017D60u);
-#endif
-#ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0x20010000u);
-#endif
-    { uint32_t _pgxa = cpu->gpr[29] + 16; g_debug_last_store_pc = 0x80017D64u; psx_store_cycle_barrier(); cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[16]);
-    PGXP_STORE(0xAFB00010u, _pgxa, cpu->gpr[16]); }  /* 0x80017D64: 0xAFB00010 */
-#ifdef PSX_COSIM
-    cosim_instr(0x80017D64u);
+    psx_icache_fetch(cpu, 0x80017D68u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
     psx_cyc_step(cpu, 0x10011u);
@@ -11855,6 +11940,49 @@ void func_80017F90(CPUState* cpu)
     __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
     psx_cyc_bb_defer_begin();
 #endif
+    debug_server_log_call_entry(0x80017F90u);
+    /* Address: 0x80017F90, Size: 8 bytes, Blocks: 1 */
+
+block_80017F90:
+#ifndef PSX_NO_DEBUG_TOOLS
+    debug_server_cyc_observe(0x80017F90u);
+#endif
+#ifdef PSX_COSIM
+    cosim_block(0x80017F90u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    if (psx_slice_block(cpu, 0x80017F90u, 2u, 0)) return;
+#endif
+    #ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_icache_fetch(cpu, 0x80017F90u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_step(cpu, 0x0u);
+#endif
+    /* delay slot (always executes) */
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_step(cpu, 0x1u);
+#endif
+    /* nop */  /* 0x80017F94: 0x00000000 */
+#ifdef PSX_COSIM
+    cosim_instr(0x80017F94u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_cyc_bb_defer_flush();
+#endif
+    psx_check_interrupts_at(cpu, 0x8006D2DCu);
+    cpu->pc = 0x8006D2DCu; return;  /* CPS j: split */
+    if (!psx_game_text_native_ok(0x80017F98u)) { cpu->pc = 0x80017F98u; return; }  /* stale-static guard */
+    func_80017F98(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
+void func_80017F98(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
+#endif
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
         switch (_cont) {
@@ -11869,37 +11997,21 @@ void func_80017F90(CPUState* cpu)
             default: break;
         }
     }
-    debug_server_log_call_entry(0x80017F90u);
-    /* Address: 0x80017F90, Size: 100 bytes, Blocks: 9 */
+    debug_server_log_call_entry(0x80017F98u);
+    /* Address: 0x80017F98, Size: 92 bytes, Blocks: 9 */
 
-block_80017F90:
+block_80017F98:
 #ifndef PSX_NO_DEBUG_TOOLS
-    debug_server_cyc_observe(0x80017F90u);
+    debug_server_cyc_observe(0x80017F98u);
 #endif
 #ifdef PSX_COSIM
-    cosim_block(0x80017F90u);
+    cosim_block(0x80017F98u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    if (psx_slice_block(cpu, 0x80017F90u, 5u, 0)) return;
+    if (psx_slice_block(cpu, 0x80017F98u, 3u, 0)) return;
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_icache_fetch(cpu, 0x80017F90u);
-#endif
-#ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0x20000000u);
-#endif
-    { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + -8;
-    PGXP_ALU(0x27BDFFF8u, cpu->gpr[29], _pgx1, 0xFFFFFFF8u); }  /* 0x80017F90: 0x27BDFFF8 */
-#ifdef PSX_COSIM
-    cosim_instr(0x80017F90u);
-#endif
-#ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0xA0000000u);
-#endif
-    { uint32_t _pgxa = cpu->gpr[29] + 16; g_debug_last_store_pc = 0x80017F94u; psx_store_cycle_barrier(); cpu->write_word(cpu->gpr[29] + 16, cpu->gpr[31]);
-    PGXP_STORE(0xAFBF0010u, _pgxa, cpu->gpr[31]); }  /* 0x80017F94: 0xAFBF0010 */
-#ifdef PSX_COSIM
-    cosim_instr(0x80017F94u);
+    psx_icache_fetch(cpu, 0x80017F98u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
     psx_cyc_step(cpu, 0x15u);

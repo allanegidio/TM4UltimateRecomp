@@ -4319,10 +4319,9 @@ block_8001A610:
     psx_icache_fetch(cpu, 0x8001A630u);
 #endif
 #ifdef PSX_ENABLE_BLOCK_CYCLES
-    psx_cyc_step(cpu, 0x20000009u);
+    psx_cyc_step(cpu, 0x1u);
 #endif
-    { uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[29] = cpu->gpr[3];  /* move */
-    PGXP_ALU(0x0060E821u, cpu->gpr[29], _pgx1, _pgx2); }  /* 0x8001A630: 0x0060E821 */
+    /* nop */  /* 0x8001A630: 0x00000000 */
 #ifdef PSX_COSIM
     cosim_instr(0x8001A630u);
 #endif

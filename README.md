@@ -1,3 +1,32 @@
+# TM4 Ultimate Edition Recompiled (unofficial)
+
+An unofficial build of [TwistedMetal4Recomp](https://github.com/TechnicallyComputers/TwistedMetal4Recomp)
+for **inSAMity's TM4 Ultimate Edition mod** (v4.19). It runs the mod as a native
+recompiled game, for example on the Steam Deck, instead of only in DuckStation.
+
+- The mod is by [inSAMity](https://www.youtube.com/@inSAMity). All mod content and credit are theirs.
+- The recompilation is TechnicallyComputers' TwistedMetal4Recomp v0.3.37, built on psxrecomp `2a4824f`.
+
+**You need the mod's own disc image**, `TM4_TM3_v4_19` as BIN/CUE (33 tracks). It is
+not included here. On first launch, pick `TM4_TM3_v4_19.cue`. The stock TM4 disc does
+not work with this build. Use the stock TwistedMetal4Recomp for that.
+
+Changes from upstream:
+
+- `game.toml` identity, `text_size` and `seeds/` come from the mod's disc. The mod
+  enlarges the boot EXE from `0x49800` to `0x61800`.
+- `generated/` was regenerated from the mod's `SCUS_945.60`.
+- 8 MB main RAM is on by default (`mods/preloaded`). The mod shows a black screen without it.
+- `[timing] guest_cycle_scale = 3` is the DuckStation-style overclock the mod's 45/60 FPS
+  modes need. Set `PSX_GUEST_CYCLE_SCALE=<n>` to try other values.
+- Netplay is off, so this build never joins the public TwistedMetal4Recomp lobby.
+- Release CI builds Linux x64 only.
+
+Install it in its own folder, never over the stock TwistedMetal4Recomp, because the files
+have the same names. To rebuild from your own copy of the mod's disc, see `tm4u.sh`.
+
+---
+
 # TwistedMetal4 Recompiled
 
 <!-- retcomm-readme-metrics -->
