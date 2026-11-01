@@ -81,3 +81,6 @@ starvation_dump.jsonl
 /.tools/
 /probe/
 /toolchain/
+
+# compile_overlays memo of fragments rejected as data (build artifact)
+/generated/interior_fail_memo.txt

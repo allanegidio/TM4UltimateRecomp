@@ -25,6 +25,10 @@ psxrecomp_add_game_runtime(psx-runtime
     LAUNCHER_BOXART "${CMAKE_CURRENT_SOURCE_DIR}/launcher_assets/img/boxart.tga"
     APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/psxrecomp.ico"
     GEN_MARKER "generated/SCUS_945.60_dispatch.c"
+    # Overlays baked in from play captures (./tm4u.sh overlays): Linux ships
+    # no overlay compiler, so without this they run in the slow interpreter.
+    # Must stay before the multi-value lists below or it is swallowed by them.
+    GAME_OVERLAY_STATIC_C "${CMAKE_CURRENT_SOURCE_DIR}/generated/overlays_static.c"
     GEN_FULL_GLOB "generated/SCUS_945.60_full_*.c"
     CODEGEN_SETUP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/codegen_setup.c"
     # Overrides the builtin psx.enhancement.8mb-ram so it is on by default:

@@ -9,6 +9,8 @@
 #   emitters   build the recompiler (psxrecomp-game + psxrecomp-bios)
 #   probe      read the mod's disc identity, EXE header and seeds into probe/
 #   analyze    run static function discovery over the mod's boot EXE
+#   overlays <captures.json>
+#              bake captured overlays into the executable (generated/overlays_static*.c)
 #   generate   generate the game C from the mod's disc
 #   build      compile the game for this Mac (build-mac/)
 #   run        start the compiled game
@@ -42,6 +44,18 @@ case "$step" in
     ;;
   analyze)
     "$PY" psxrecomp/psxrecomp_cli.py analyze --project-root . --config game.toml "$@"
+    ;;
+  overlays)
+    captures="${1:?usage: ./tm4u.sh overlays <captures.json>}"
+    shift
+    mkdir -p probe
+    "$PY" psxrecomp/tools/enrich_overlay_captures.py \
+      --captures "$captures" --out probe/overlay_captures.enriched.json
+    "$PY" psxrecomp/tools/compile_overlays.py --static --cps --force \
+      --captures probe/overlay_captures.enriched.json --game-toml game.toml \
+      --recompiler build-recompiler/psxrecomp-game \
+      --runtime-include psxrecomp/runtime/include \
+      --out-dir generated --gcc "$(command -v clang || command -v gcc)" "$@"
     ;;
   generate)
     "$PY" psxrecomp/psxrecomp_cli.py generate --project-root . --config game.toml --disc "$DISC" "$@"
