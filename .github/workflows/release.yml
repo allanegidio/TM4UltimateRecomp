@@ -636,6 +636,10 @@ jobs:
               exit 1
             fi
           done
+          if grep -q '^overlay_toolchain/' <<<"${LIST}"; then
+            echo "::error::release zip still ships overlay_toolchain/ (autocompile stutters on the Deck)" >&2
+            exit 1
+          fi
           if grep -E '\.c$' <<<"${LIST}" | grep -qv '^overlay_toolchain/'; then
             echo "::error::release zip contains C sources outside overlay_toolchain/" >&2
             grep -E '\.c$' <<<"${LIST}" | grep -v '^overlay_toolchain/' | head -20 >&2

@@ -69,7 +69,14 @@ required_disc_fp = "ae4b1cd6118cabd37864a3b437ce4c701b8317add8febd52b7b7e9b56e21
 # DuckStation it needs an overclock too. Measured in game time: 2x gives about
 # 20 FPS there and 3x about 26-30. Every arena, car and mode now runs as
 # native code (generated/overlays_static.tar.xz), so the overclock no longer
-# multiplies interpreter work. Even so, at 3x an M1 Pro runs the worst fight
-# only ~15% faster than real time, so 2x is the safe default for the Deck.
+# multiplies interpreter work. The Steam Deck runs that fight at about 94% of
+# real time at 2x and 70% at 3x, so 2x it is.
+#
+# Only in matches: outside them the game just waits (logos, the intro movie,
+# menus), and 2x made those waits cost twice the host time, so the intro ran
+# slow on the Deck. 0x8004FFD0 is 2 in every match (deathmatch, tournament,
+# 2 players, bonus stages, the mod's 60 FPS mode, also while paused), 1 in
+# the logos, menus and loading, and 0x48 in the movies.
 [timing]
 guest_cycle_scale = 2
+guest_cycle_scale_gate = { addr = 0x8004FFD0, size = 1, value = 2 }

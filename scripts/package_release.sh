@@ -29,17 +29,20 @@ if [[ ! -f "${PACKAGER}" ]]; then
 fi
 chmod +x "${PACKAGER}" 2>/dev/null || true
 
-EXTRA=()
+# No overlay_toolchain/: Linux gets no overlay compiler (no tcc), so the bundle
+# could only start background compiles that always fail, and on the Steam Deck
+# they stuttered the game. Every overlay is baked into the executable instead
+# (generated/overlays_static.tar.xz).
+EXTRA=(--no-overlay-toolchain)
 # Overlay shard cache. It is compiled FROM THE DISC, so CI (no disc) cannot
-# build one: the committed static AOT shard is linked into the executable and
-# the bundled overlay_toolchain/ compiles the rest from the player's disc at
-# runtime. A developer packaging locally with a cache can ship it instead:
+# build one: the committed static AOT shard is linked into the executable. A
+# developer packaging locally with a cache can ship it instead:
 #   PSX_OVERLAY_CACHE_ROOT=/path/to/cache scripts/package_release.sh ...
 if [[ -n "${PSX_OVERLAY_CACHE_ROOT:-}" ]]; then
   EXTRA+=(--overlay-cache-root "${PSX_OVERLAY_CACHE_ROOT}")
 else
   EXTRA+=(--ship-without-overlay-cache-because \
-    "no disc at package time: the committed static AOT shard is compiled in and overlay_toolchain/ autocompiles the rest on the player's machine")
+    "no disc at package time: every overlay is baked into the executable (static AOT shard)")
 fi
 # Extra docs shipped at the zip root (DISC.md tells players which dump works).
 for _doc in DISC.md; do

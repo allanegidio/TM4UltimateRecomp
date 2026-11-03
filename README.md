@@ -22,10 +22,15 @@ Changes from upstream:
   this, Linux runs them in the slow interpreter, because it ships no overlay compiler. The
   baked C is about 1.5 GB, so git keeps it as `generated/overlays_static.tar.xz`. CI
   unpacks it (`./tm4u.sh pack-overlays` / `unpack-overlays`).
-- CPU overclock `[timing] guest_cycle_scale = 2`: the mod does more work per frame than
+- CPU overclock `[timing] guest_cycle_scale = 2`, only during matches
+  (`guest_cycle_scale_gate` on 0x8004FFD0 = 2): the mod does more work per frame than
   the PS1 CPU can, so big fights drop to 10-12 FPS at stock speed. 2x gives about 20 FPS
-  in the worst fight (Crazy 8 against 7 CPU cars) and 3x about 26-30, if the host keeps
-  up. Use the mod's DEFAULT FPS setting; 45/60 need still more CPU.
+  in the worst fight (Crazy 8 against 7 CPU cars), and the Steam Deck keeps up with it.
+  Outside matches the game only waits, so the logos and the intro movie stay at 1x. Use
+  the mod's DEFAULT FPS setting: 45/60 need more CPU than the Deck has in big fights.
+- The release zip ships no `overlay_toolchain/`: Linux has no overlay compiler, so the
+  bundled toolchain could only start background compiles that always fail, and on the
+  Deck they made the game stutter.
 - `patches/psxrecomp/` holds runtime fixes applied on top of the pinned psxrecomp (CI
   and `./tm4u.sh apply-patches`). 0001 drops a diagnostic scan that release builds never
   read, which took 23-39% of the emulation thread with this many baked overlays.
