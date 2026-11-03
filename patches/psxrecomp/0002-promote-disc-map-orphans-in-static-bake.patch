@@ -1,0 +1,287 @@
+diff --git a/tools/compile_overlays.py b/tools/compile_overlays.py
+index 372125c5..0084785f 100644
+--- a/tools/compile_overlays.py
++++ b/tools/compile_overlays.py
+@@ -2069,6 +2069,17 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+     suppression_passes = 0
+     all_branch_targets = set()
+     kernel_window = (load_addr & 0x1FFFFFFF) < 0x10000
++    # TM4 Ultimate patch: a disc-map image (a disc module placed in one load
++    # chain) promotes orphans too when _static_capture_job asks for it. Its
++    # dispatch evidence was folded in only where the bytes around the PC match
++    # a runtime capture, or copied by module offset between placements of the
++    # same payload, so an orphan there is code in this image, not the PC of
++    # another occupant of the band.
++    promote_orphans = kernel_window or bool(cap.get('_promote_orphans'))
++    # Orphans whose promotion failed this image's audit in an earlier attempt,
++    # and the words that audit flagged.
++    promote_exclude = set(cap.get('_promote_exclude', ()))
++    promote_bad_pcs = set(cap.get('_promote_bad_pcs', ()))
+ 
+     while True:
+         # Recompute call/branch evidence from the CURRENT partition. Evidence is
+@@ -2188,7 +2199,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+             known = normalized
+             derived_reasons = next_reasons
+ 
+-        if not kernel_window:
++        if not promote_orphans:
+             break
+ 
+         # Orphan promotion (see DISPATCH_ROOT in INCLUDE_REASONS): a kernel
+@@ -2196,6 +2207,8 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+         # trusted walk root. Re-enter the walk loop — the new root's walk
+         # may cover other interiors or discover direct-jal callees.
+         covered = set()
++        span_end = {}
++        host_walks = {}
+         sorted_known = sorted(known)
+         for i, entry in enumerate(sorted_known):
+             hard_cap = sorted_known[i + 1] if i + 1 < len(sorted_known) else hi
+@@ -2203,9 +2216,103 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+                 data, load_addr, size, entry, hard_cap, producer_ranges,
+                 allow_cross_producer_calls)
+             covered |= walk['visited']
++            if walk['visited']:
++                span_end[entry] = max(walk['visited']) + 4
++                host_walks[entry] = walk
+         promoted = sorted(a for a, r in included.items()
+                           if r == 'DISPATCH_INTERIOR' and a not in covered
++                          and a not in promote_exclude
+                           and _is_valid_mips_word(_word_at(data, load_addr, a)))
++        if not kernel_window:
++            # TM4 Ultimate patch: a disc-map orphan is promoted only when
++            #  - the game executed it: dispatch evidence alone also holds
++            #    relocation targets that are data (strings, pointer tables);
++            #  - it lies outside every host's compiled span [root, last walked
++            #    word], or every branch target that truncating that host
++            #    there leaves without a label becomes an interior alias entry
++            #    (truncation_repairs);
++            #  - every word the recompiler compiles for it, the whole span up
++            #    to the last walked word, is an instruction it emits (LWC0 and
++            #    SWC0 become TODOs) and none failed an earlier attempt's
++            #    audit. One bad root fails the whole image's generated-C
++            #    audit.
++            def inside_host(entry):
++                i = bisect_left(sorted_known, entry) - 1
++                return i >= 0 and entry < span_end.get(sorted_known[i], 0)
++
++            def truncation_repairs(entry):
++                # Promoting entry caps its host there: the host's words from
++                # entry on move to the new root's function. A branch target
++                # keeps its label only while a branch in its own (new)
++                # function still reaches it; one reached only from the other
++                # side, like a loop head whose back-edge moves, needs an
++                # interior alias entry in the function that now holds it,
++                # which the recompiler gives only where that function's walk
++                # reaches. Returns those targets, or None when one is out of
++                # reach. Jump tables record no source: refuse.
++                host = sorted_known[bisect_left(sorted_known, entry) - 1]
++                walk = host_walks[host]
++                if walk['jump_table_targets']:
++                    return None
++                # The recompiler compiles the whole span [root, last walked
++                # word] and labels the branch targets of every word in it,
++                # walked or not.
++                low, high = set(), set()
++                for pc in range(host, span_end[host], 4):
++                    kind, target = _classify_cf(pc, _word_at(data, load_addr, pc) or 0)
++                    if kind in ('j', 'branch') and host <= target < span_end[host]:
++                        (low if pc < entry else high).add(target)
++                lost_low = {t for t in high - low if t < entry and t != host}
++                lost_high = {t for t in low - high if t > entry}
++                # Interior entries the host already serves (dispatch evidence,
++                # or labels an earlier promotion repaired) must stay reachable
++                # in their new function as well.
++                aliases = {t for t, reason in included.items()
++                           if reason == 'DISPATCH_INTERIOR' and t != entry
++                           and t in walk['visited']}
++                need_low = lost_low | {t for t in aliases if t < entry}
++                need_high = lost_high | {t for t in aliases if t > entry}
++                if not lost_low and not lost_high and not aliases:
++                    return set()
++                below = _walk_overlay_function(
++                    data, load_addr, size, host, entry, producer_ranges,
++                    allow_cross_producer_calls)['visited']
++                cap_at = bisect_left(sorted_known, entry + 1)
++                above = _walk_overlay_function(
++                    data, load_addr, size, entry,
++                    sorted_known[cap_at] if cap_at < len(sorted_known) else hi,
++                    producer_ranges, allow_cross_producer_calls)['visited']
++                if need_low <= below and need_high <= above:
++                    return lost_low | lost_high
++                return None
++
++            def walks_clean(entry):
++                cap_at = bisect_left(sorted_known, entry + 1)
++                walk = _walk_overlay_function(
++                    data, load_addr, size, entry,
++                    sorted_known[cap_at] if cap_at < len(sorted_known) else hi,
++                    producer_ranges, allow_cross_producer_calls)
++                if not walk['visited']:
++                    return False
++                for pc in range(entry, max(walk['visited']) + 4, 4):
++                    word = _word_at(data, load_addr, pc)
++                    if (pc in promote_bad_pcs or not _is_valid_mips_word(word)
++                            or (word >> 26) in (0x30, 0x38)):
++                        return False
++                return True
++            clean, repairs = None, set()
++            for a in promoted:
++                if a not in executed_pcs:
++                    continue
++                fix = truncation_repairs(a) if inside_host(a) else set()
++                if fix is not None and walks_clean(a):
++                    clean, repairs = a, fix
++                    break
++            promote_exclude.update(a for a in promoted
++                                   if clean is None or a < clean)
++            for target in repairs:
++                included.setdefault(target, 'DISPATCH_INTERIOR')
++            promoted = [clean] if clean is not None else []
+         if not promoted:
+             break
+         # Promote ONE orphan per iteration (lowest address first): its walk
+@@ -3840,9 +3947,14 @@ def served_static_variant_keys(parts) -> set:
+ 
+     Coverage is per byte-variant: a part serves an address only for the image
+     it was compiled from, because the dispatcher's CRC gate rejects that
+-    identity against any other resident bytes."""
++    identity against any other resident bytes.
++
++    TM4 Ultimate patch: identities hosted by a promoted orphan do not count,
++    so the isolated-fragment pass builds and keeps the same fragments as a
++    build without promotion; the dispatcher holds both."""
+     return {(variant['addr'], part['image_crc'])
+-            for part in parts for variant in part['variants']}
++            for part in parts for variant in part['variants']
++            if not variant.get('promoted_host')}
+ 
+ 
+ def select_static_fragment_demands(requested_keys, parts) -> list:
+@@ -6268,10 +6380,66 @@ def static_capture_job(cap: dict, args, toml: dict, forced_interiors: set,
+ def _static_capture_job(cap, args, toml, forced_interiors, static_out, result):
+     # Runs in a worker process too, so it sets its image segment itself.
+     with image_segment(segment_of(int(cap['load_addr'], 16))):
++        if cap.get('disc_map'):
++            # TM4 Ultimate patch: a promoted orphan shares this image's
++            # failure domain. Build a disc-map image with promotion; when the
++            # audit fails, drop the promoted roots that own the failing words
++            # and build again. If no promoted root is to blame, or the
++            # attempts run out, build once more exactly as before.
++            exclude, bad_pcs = set(), set()
++            for attempt in range(PROMOTION_ATTEMPTS):
++                _static_capture_job_in_segment(
++                    dict(cap, _promote_orphans=True,
++                         _promote_exclude=sorted(exclude),
++                         _promote_bad_pcs=sorted(bad_pcs)),
++                    args, toml, forced_interiors, static_out, result)
++                if result['outcome'] != 'fail':
++                    return
++                blamed = _promotion_culprits(result) - exclude
++                new_bad = set(result.get('audit_unsupported') or ()) - bad_pcs
++                retry = (blamed or new_bad) and attempt + 1 < PROMOTION_ATTEMPTS
++                print(f'  ORPHAN PROMOTION FAILED ({result["fail"][0]}): '
++                      + (f'dropping {len(blamed)} promoted root(s), '
++                         f'{len(new_bad)} bad word(s)\n' if retry
++                         else 'rebuilding without it\n'))
++                _reset_static_result(result)
++                if not retry:
++                    break
++                exclude |= blamed
++                bad_pcs |= new_bad
+         _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+                                        static_out, result)
+ 
+ 
++# TM4 Ultimate patch: orphan promotion retries per disc-map image.
++PROMOTION_ATTEMPTS = 4
++
++
++def _promotion_culprits(result) -> set:
++    """Promoted roots that own a word the failed audit flagged unsupported.
++
++    Walks stop at the next root, so the owner of a word is the nearest root at
++    or below it. An unknown_bad target names a callee, not its caller, so that
++    failure blames nobody."""
++    reasons = result.get('included_reasons') or {}
++    if result.get('audit_unknown_bad'):
++        return set()
++    roots = sorted(a for a, r in reasons.items() if r != 'DISPATCH_INTERIOR')
++    blamed = set()
++    for addr in result.get('audit_unsupported') or ():
++        i = bisect_left(roots, addr + 1) - 1
++        if i >= 0 and reasons[roots[i]] == 'DISPATCH_ROOT':
++            blamed.add(roots[i])
++    return blamed
++
++
++def _reset_static_result(result) -> None:
++    result.update(outcome=None, fail=None, part=None,
++                  requested_entries=set(), entry_sources={},
++                  included_reasons=None, audit_unsupported=None,
++                  audit_unknown_bad=None)
++
++
+ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+                                    static_out, result):
+     load_addr = int(cap['load_addr'], 16)
+@@ -6318,6 +6486,8 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+              if guard_bytes else ''))
+     print(f'  seeds: {len(seeds)}  mode: static -> {static_out}')
+     print_seed_audit(seed_audit)
++    # TM4 Ultimate patch: the roots of this attempt, for the promotion retry.
++    result['included_reasons'] = dict(seed_audit['included_reasons'])
+ 
+     root_seeds = [
+         seed for seed in seeds
+@@ -6390,6 +6560,9 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+             print('  GENERATED-C AUDIT FAILED\n')
+             fail('audit', f'{len(c_audit["unknown_bad"])} unknown_bad, '
+                           f'{len(c_audit["unsupported_todo_addrs"])} unsupported')
++            # TM4 Ultimate patch: what the promotion retry blames.
++            result['audit_unsupported'] = sorted(c_audit['unsupported_todo_addrs'])
++            result['audit_unknown_bad'] = len(c_audit['unknown_bad'])
+             return
+         if not ranges_src:
+             print('  STATIC RANGE AUDIT FAILED: no _full.ranges manifest\n')
+@@ -6428,6 +6601,20 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+                     'crc': code_crc,
+                     'ranges': ranges,
+                 })
++        # TM4 Ultimate patch: mark identities hosted by a promoted orphan (a
++        # host's ranges start at its root; its resume wrappers are marked in
++        # synthesize_all_resume_wrappers), so the isolated-fragment pass still
++        # builds the fragments the stock build would. Those fragments'
++        # uncapped walks also give dispatch rows to code past their entry,
++        # such as function-pointer targets no capture names.
++        promoted = set()
++        if cap.get('_promote_orphans'):
++            promoted = {addr & 0x1FFFFFFF for addr, reason
++                        in seed_audit['included_reasons'].items()
++                        if reason == 'DISPATCH_ROOT'}
++            for variant in variants:
++                if min(lo for lo, _len in variant['ranges']) & 0x1FFFFFFF in promoted:
++                    variant['promoted_host'] = True
+         result['part'] = {
+             'src': src,
+             'variants': variants,
+@@ -6437,6 +6624,7 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+             'symbols': symbols,
+             'ids_by_addr': ids_by_addr,
+             'continuation_owners': continuation_owners,
++            'promoted_roots': promoted,
+         }
+         print(f'  recompiled: {len(func_addrs)} functions, '
+               f'{len(variants)} exact identities\n')
+@@ -8054,6 +8242,10 @@ def main():
+                             'crc': code_crc,
+                             'ranges': ranges,
+                         })
++                        # TM4 Ultimate patch: a promoted host's wrappers do
++                        # not stand in for the stock isolated fragments.
++                        if host & 0x1FFFFFFF in part.get('promoted_roots', ()):
++                            part['variants'][-1]['promoted_host'] = True
+                     done.add(entry)
+                     synthesized += 1
+                 part['src'] += ''.join(wrappers)

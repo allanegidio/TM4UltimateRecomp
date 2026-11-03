@@ -15,7 +15,11 @@ Changes from upstream:
 
 - `game.toml` identity, `text_size` and `seeds/` come from the mod's disc. The mod
   enlarges the boot EXE from `0x49800` to `0x61800`.
-- `generated/` was regenerated from the mod's `SCUS_945.60`.
+- `generated/` was regenerated from the mod's `SCUS_945.60`. `seeds/ghidra_funcs.txt`
+  adds the mod's hook entry points and functions that function discovery missed: the
+  mod's car-name compare at `0x800640F4` (it follows a string table, so it was taken for
+  data) and two boot functions reached only through a function pointer. All three ran
+  in the interpreter.
 - 8 MB main RAM is on by default (`mods/preloaded`). The mod shows a black screen without it.
 - Every module on the mod's disc is baked into the executable as native code: each
   arena's load order, every car in the first slot, the menus and the movie player. Without
@@ -31,9 +35,15 @@ Changes from upstream:
 - The release zip ships no `overlay_toolchain/`: Linux has no overlay compiler, so the
   bundled toolchain could only start background compiles that always fail, and on the
   Deck they made the game stutter.
-- `patches/psxrecomp/` holds runtime fixes applied on top of the pinned psxrecomp (CI
-  and `./tm4u.sh apply-patches`). 0001 drops a diagnostic scan that release builds never
-  read, which took 23-39% of the emulation thread with this many baked overlays.
+- `patches/psxrecomp/` holds fixes applied on top of the pinned psxrecomp (CI and
+  `./tm4u.sh apply-patches`).
+  - 0001 drops a diagnostic scan that release builds never read, which took 23-39% of
+    the emulation thread with this many baked overlays.
+  - 0002 changes the overlay bake. In the disc modules, a mid-function entry the game
+    executed with no known host function becomes a root when everything compiled from
+    it is valid code. If it splits a function, every branch target left without a
+    label becomes an interior entry, or the root is not added. The stock fragments are
+    still built, and an image whose build fails is rebuilt without the new roots.
 - Widescreen was tried and dropped: TM4 culls objects outside the 4:3 view, so the map's
   sides were cut.
 - Netplay is off, so this build never joins the public TwistedMetal4Recomp lobby.

@@ -733,6 +733,10 @@
 0x8005D9DC
 0x8005DB34
 0x80063718
+# Tail-jump target (j at 0x80063CB0) of the mod's car-name compare. It follows
+# a string table, so function discovery took it for data and left a stub that
+# fell to the interpreter about 3,300 times per second in big fights.
+0x800640F4
 0x80064550
 0x80064D18
 0x80064D50
@@ -754,3 +758,7 @@
 0x8006F6D8
 0x8006F744
 0x80070200
+# Reached only through a function pointer (jalr at 0x80011958 and 0x80021E88),
+# so function discovery missed them and the interpreter ran them in the boot.
+0x80011554
+0x80021F10

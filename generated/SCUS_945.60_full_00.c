@@ -19467,6 +19467,40 @@ block_80011544:
     ;  /* label compatibility: C requires a statement after the last label */
 }
 
+void func_80011554(CPUState* cpu)
+{
+#if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
+    __attribute__((cleanup(psx_cyc_bb_defer_cleanup))) int _psx_cyc_bb_guard = 1;
+    psx_cyc_bb_defer_begin();
+#endif
+    debug_server_log_call_entry(0x80011554u);
+    /* Address: 0x80011554, Size: 4 bytes, Blocks: 1 */
+
+block_80011554:
+#ifndef PSX_NO_DEBUG_TOOLS
+    debug_server_cyc_observe(0x80011554u);
+#endif
+#ifdef PSX_COSIM
+    cosim_block(0x80011554u);
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    if (psx_slice_block(cpu, 0x80011554u, 1u, 0)) return;
+#endif
+#ifdef PSX_ENABLE_BLOCK_CYCLES
+    psx_icache_fetch(cpu, 0x80011554u);
+#endif
+    { uint32_t _pgxa = cpu->gpr[28] + 340; cpu->gpr[2] = psx_cyc_load_word(cpu, cpu->gpr[28] + 340, 2, 0x10000000u);
+    PGXP_LOAD(0x8F820154u, _pgxa, cpu->gpr[2]); }  /* 0x80011554: 0x8F820154 */
+#ifdef PSX_COSIM
+    cosim_instr(0x80011554u);
+#endif
+    if (!psx_game_text_native_ok(0x80011558u)) { cpu->pc = 0x80011558u; return; }  /* stale-static guard */
+    func_80011558(cpu); return;  /* fallthrough to split piece */
+    if (!psx_game_text_native_ok(0x80011558u)) { cpu->pc = 0x80011558u; return; }  /* stale-static guard */
+    func_80011558(cpu);  /* fallthrough to next function */
+    ;  /* label compatibility: C requires a statement after the last label */
+}
+
 void func_80011558(CPUState* cpu)
 {
 #if defined(PSX_ENABLE_BLOCK_CYCLES) && (defined(__GNUC__) || defined(__clang__))
