@@ -187,6 +187,21 @@ jobs:
           submodules: recursive
           fetch-depth: 1
 
+      # Local fixes to the pinned psxrecomp runtime (./tm4u.sh apply-patches
+      # does the same locally). They touch runtime C only, none of the emitter
+      # inputs that the BIOS stamp fingerprints.
+      - name: Apply psxrecomp patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          patches=(patches/psxrecomp/*.patch)
+          (( ${#patches[@]} )) || { echo "::error::no patches/psxrecomp/*.patch in the checkout"; exit 1; }
+          for p in "${patches[@]}"; do
+            echo "applying ${p}"
+            git -C psxrecomp apply --verbose "../${p}"
+          done
+
       - name: Pin VERSION
         shell: bash
         run: |
@@ -412,6 +427,18 @@ jobs:
           key: game-${{ matrix.artifact }}
           max-size: 2G
 
+      # The baked overlay C (generated/overlays_static*.c, ~1.5 GB) is committed
+      # as one xz archive instead of loose files (./tm4u.sh pack-overlays): the
+      # dispatcher alone is over GitHub's 100 MB file limit.
+      - name: Unpack baked overlays
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xJf generated/overlays_static.tar.xz
+          test -f generated/overlays_static.c
+          ls generated/overlays_static*.c | wc -l
+          du -sh generated
+
       - name: Configure & build the game
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target || '' }}
@@ -510,7 +537,8 @@ jobs:
           # Ninja does not emit flags.make (Makefiles generator only). Probe
           # whichever compile-flag artifact exists for the defines the release
           # depends on.
-          for define in PSX_HAVE_VULKAN PSX_HAS_GAME_DISPATCH; do
+          # PSX_HAS_OVERLAY_DISPATCH: the baked overlays were found and linked.
+          for define in PSX_HAVE_VULKAN PSX_HAS_GAME_DISPATCH PSX_HAS_OVERLAY_DISPATCH; do
             FOUND=0
             for f in \
                 build-ci/build.ninja \

@@ -84,3 +84,8 @@ starvation_dump.jsonl
 
 # compile_overlays memo of fragments rejected as data (build artifact)
 /generated/interior_fail_memo.txt
+
+# Baked overlay C (~1.5 GB): git keeps generated/overlays_static.tar.xz instead
+# (./tm4u.sh pack-overlays / unpack-overlays; CI unpacks it before building).
+/generated/overlays_static.c
+/generated/overlays_static_[0-9][0-9][0-9][0-9].c

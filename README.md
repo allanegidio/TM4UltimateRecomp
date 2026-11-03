@@ -17,10 +17,20 @@ Changes from upstream:
   enlarges the boot EXE from `0x49800` to `0x61800`.
 - `generated/` was regenerated from the mod's `SCUS_945.60`.
 - 8 MB main RAM is on by default (`mods/preloaded`). The mod shows a black screen without it.
-- No CPU overclock (`guest_cycle_scale`): TM4 busy-waits in overlay code, which runs in
-  the interpreter on Linux, so an overclock made the game run at half speed on the Deck.
-  The mod's 45/60 FPS options may slow down; DEFAULT (30 FPS) runs full speed. Widescreen
-  was tried and dropped: TM4 culls objects outside the 4:3 view, so the map's sides were cut.
+- Every module on the mod's disc is baked into the executable as native code: each
+  arena's load order, every car in the first slot, the menus and the movie player. Without
+  this, Linux runs them in the slow interpreter, because it ships no overlay compiler. The
+  baked C is about 1.5 GB, so git keeps it as `generated/overlays_static.tar.xz`. CI
+  unpacks it (`./tm4u.sh pack-overlays` / `unpack-overlays`).
+- CPU overclock `[timing] guest_cycle_scale = 2`: the mod does more work per frame than
+  the PS1 CPU can, so big fights drop to 10-12 FPS at stock speed. 2x gives about 20 FPS
+  in the worst fight (Crazy 8 against 7 CPU cars) and 3x about 26-30, if the host keeps
+  up. Use the mod's DEFAULT FPS setting; 45/60 need still more CPU.
+- `patches/psxrecomp/` holds runtime fixes applied on top of the pinned psxrecomp (CI
+  and `./tm4u.sh apply-patches`). 0001 drops a diagnostic scan that release builds never
+  read, which took 23-39% of the emulation thread with this many baked overlays.
+- Widescreen was tried and dropped: TM4 culls objects outside the 4:3 view, so the map's
+  sides were cut.
 - Netplay is off, so this build never joins the public TwistedMetal4Recomp lobby.
 - Release CI builds Linux x64 only.
 

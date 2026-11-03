@@ -64,6 +64,12 @@ require_cue = true
 required_tracks = 33
 required_disc_fp = "ae4b1cd6118cabd37864a3b437ce4c701b8317add8febd52b7b7e9b56e21e268"
 
-# No [timing] guest_cycle_scale: TM4 busy-waits in overlay code, which runs in
-# the interpreter on Linux, so a CPU "overclock" made the whole game run at
-# about half speed on the Steam Deck. Faithful timing, like the stock TM4.
+# CPU overclock. The mod does more work per frame than the PS1 CPU can, so
+# big fights drop to 10-12 FPS at stock speed (Crazy 8 vs 7 CPU cars); in
+# DuckStation it needs an overclock too. Measured in game time: 2x gives about
+# 20 FPS there and 3x about 26-30. Every arena, car and mode now runs as
+# native code (generated/overlays_static.tar.xz), so the overclock no longer
+# multiplies interpreter work. Even so, at 3x an M1 Pro runs the worst fight
+# only ~15% faster than real time, so 2x is the safe default for the Deck.
+[timing]
+guest_cycle_scale = 2

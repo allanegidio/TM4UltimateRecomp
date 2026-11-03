@@ -1,0 +1,31 @@
+diff --git a/runtime/src/dirty_ram_interp.c b/runtime/src/dirty_ram_interp.c
+index 346bd612..ce9db363 100644
+--- a/runtime/src/dirty_ram_interp.c
++++ b/runtime/src/dirty_ram_interp.c
+@@ -3181,11 +3181,21 @@ static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_
+          * arrival, not interp block chaining). occ_crc names which overlay is
+          * resident in this band; last_ext_ra names the caller that reached
+          * this interior. Both durable in the per_pc snapshot — no ring window,
+-         * no offline join. See DirtyRamPcEntry. */
+-        extern uint32_t psx_overlay_resident_crc_at(uint32_t phys, int *valid);
+-        int occ_ok = 0;
+-        pc_entry->occ_crc = psx_overlay_resident_crc_at(phys, &occ_ok);
+-        pc_entry->occ_ok = (uint8_t)occ_ok;
++         * no offline join. See DirtyRamPcEntry.
++         *
++         * TM4 Ultimate patch: only the debug server reads occ_crc / occ_ok,
++         * and psx_overlay_resident_crc_at() scans the whole static-match cache
++         * (16,384 slots) on every call. With a large static overlay bake that
++         * scan took 23-39% of the emulation thread, so release builds skip it
++         * and debug builds refresh it at power-of-two entry counts. */
++#ifndef PSX_NO_DEBUG_TOOLS
++        if ((pc_entry->entry_hits & (pc_entry->entry_hits - 1u)) == 0u) {
++            extern uint32_t psx_overlay_resident_crc_at(uint32_t phys, int *valid);
++            int occ_ok = 0;
++            pc_entry->occ_crc = psx_overlay_resident_crc_at(phys, &occ_ok);
++            pc_entry->occ_ok = (uint8_t)occ_ok;
++        }
++#endif
+         pc_entry->last_ext_ra = cpu->gpr[31];
+     }
+     g_dirty_interp_chain_target = 0;
