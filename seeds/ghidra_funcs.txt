@@ -1,5 +1,5 @@
 # Auto-scanned JAL targets (+ entry) from SCUS_945.60
-# entry=0x80010000 load=0x80010000 text_size=0x61800
+# entry=0x80010000 load=0x80010000 text_size=0x63000 (mod V2.2, disc v4.31)
 # First-pass only — add overlay / runtime discoveries as you decomp.
 0x80010000
 0x8001008C
@@ -733,6 +733,11 @@
 0x8005D9DC
 0x8005DB34
 0x80063718
+# V2.2 hooks into the code the mod added at the end of the EXE (j at 0x800367C0,
+# 0x800369D4 and 0x800702A4).
+0x80071A40
+0x80071C50
+0x80072178
 # Tail-jump target (j at 0x80063CB0) of the mod's car-name compare. It follows
 # a string table, so function discovery took it for data and left a stub that
 # fell to the interpreter about 3,300 times per second in big fights.
@@ -758,6 +763,9 @@
 0x8006F6D8
 0x8006F744
 0x80070200
+0x80071800
+0x80071BA4
+0x80072000
 # Reached only through a function pointer (jalr at 0x80011958 and 0x80021E88),
 # so function discovery missed them and the interpreter ran them in the boot.
 0x80011554

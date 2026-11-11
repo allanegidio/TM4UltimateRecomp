@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tm4u.sh - build steps for the TM4 Ultimate Edition recomp (inSAMity mod v4.19).
+# tm4u.sh - build steps for the TM4 Ultimate Edition recomp (inSAMity mod V2.2, disc v4.31).
 #
 # Everything runs inside this folder. Build tools (cmake, ninja, pkg-config)
 # come from .tools/venv, so nothing is installed system-wide. The disc lives in
@@ -32,7 +32,7 @@ cd "$ROOT"
 
 export PATH="$ROOT/.tools/venv/bin:$PATH"
 PY="$ROOT/.tools/venv/bin/python"
-DISC="$ROOT/disc/TM4_TM3_v4_19.cue"
+DISC="$ROOT/disc/TM4_TM3_v4_31.cue"
 JOBS="${JOBS:-$(sysctl -n hw.ncpu 2>/dev/null || nproc)}"
 
 step="${1:-}"
@@ -47,7 +47,7 @@ case "$step" in
     "$PY" psxrecomp/tools/new_project_layout/probe_disc.py "$DISC" \
       --json-out probe/disc_probe.json --write-catalog probe/catalog_identity.json \
       --write-seeds probe/probe_seeds.txt --write-game-toml probe/game.probe.toml \
-      --write-boot-exe probe --disc-rel disc/TM4_TM3_v4_19.cue --out-dir disc \
+      --write-boot-exe probe --disc-rel disc/TM4_TM3_v4_31.cue --out-dir disc \
       --players 4 "$@"
     ;;
   analyze)

@@ -1,20 +1,21 @@
 # TM4 Ultimate Edition Recompiled (unofficial)
 
 An unofficial build of [TwistedMetal4Recomp](https://github.com/TechnicallyComputers/TwistedMetal4Recomp)
-for **inSAMity's TM4 Ultimate Edition mod** (v4.19). It runs the mod as a native
+for **inSAMity's TM4 Ultimate Edition mod** (V2.2, disc v4.31). It runs the mod as a native
 recompiled game, for example on the Steam Deck, instead of only in DuckStation.
 
 - The mod is by [inSAMity](https://www.youtube.com/@inSAMity). All mod content and credit are theirs.
 - The recompilation is TechnicallyComputers' TwistedMetal4Recomp v0.3.37, built on psxrecomp `2a4824f`.
 
-**You need the mod's own disc image**, `TM4_TM3_v4_19` as BIN/CUE (33 tracks). It is
-not included here. On first launch, pick `TM4_TM3_v4_19.cue`. The stock TM4 disc does
-not work with this build. Use the stock TwistedMetal4Recomp for that.
+**You need the mod's own disc image**, `TM4_TM3_v4_31` (TM4 Ultimate V2.2) as BIN/CUE
+(33 tracks). It is not included here. On first launch, pick `TM4_TM3_v4_31.cue`. Earlier
+mod versions (v4.19) and the stock TM4 disc do not work with this build: releases 4.19.x
+are the v4.19 build, and the stock TwistedMetal4Recomp plays the stock disc.
 
 Changes from upstream:
 
 - `game.toml` identity, `text_size` and `seeds/` come from the mod's disc. The mod
-  enlarges the boot EXE from `0x49800` to `0x61800`.
+  enlarges the boot EXE from `0x49800` to `0x63000`.
 - `generated/` was regenerated from the mod's `SCUS_945.60`. `seeds/ghidra_funcs.txt`
   adds the mod's hook entry points and functions that function discovery missed: the
   mod's car-name compare at `0x800640F4` (it follows a string table, so it was taken for

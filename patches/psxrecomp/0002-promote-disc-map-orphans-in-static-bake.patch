@@ -1,8 +1,22 @@
 diff --git a/tools/compile_overlays.py b/tools/compile_overlays.py
-index 372125c5..0084785f 100644
+index 372125c5..53067d87 100644
 --- a/tools/compile_overlays.py
 +++ b/tools/compile_overlays.py
-@@ -2069,6 +2069,17 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+@@ -2042,6 +2042,13 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+             include(addr, 'FUNCTION_POINTER_TARGET')
+     for addr in toml_entries:
+         include(addr, 'TOML_DECLARED_ENTRY')
++    # TM4 Ultimate patch: roots a bake set asserts by hand. They are code the
++    # mod reaches only by j (a code cave after a string table, jumping back),
++    # so they have no callable boundary; without a root there, the caller's
++    # walk follows the j and its compiled span swallows the strings between.
++    for addr in _parse_addr_list(cap.get('tm4u_trusted_roots', [])):
++        if region(addr):
++            included[addr] = 'DISPATCH_ROOT'
+ 
+     legacy_seed_mode = bool(legacy_seeds) and not cap.get('schema')
+     if legacy_seed_mode:
+@@ -2069,6 +2076,17 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
      suppression_passes = 0
      all_branch_targets = set()
      kernel_window = (load_addr & 0x1FFFFFFF) < 0x10000
@@ -20,7 +34,7 @@ index 372125c5..0084785f 100644
  
      while True:
          # Recompute call/branch evidence from the CURRENT partition. Evidence is
-@@ -2188,7 +2199,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+@@ -2188,7 +2206,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
              known = normalized
              derived_reasons = next_reasons
  
@@ -29,7 +43,7 @@ index 372125c5..0084785f 100644
              break
  
          # Orphan promotion (see DISPATCH_ROOT in INCLUDE_REASONS): a kernel
-@@ -2196,6 +2207,8 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+@@ -2196,6 +2214,8 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
          # trusted walk root. Re-enter the walk loop — the new root's walk
          # may cover other interiors or discover direct-jal callees.
          covered = set()
@@ -38,7 +52,7 @@ index 372125c5..0084785f 100644
          sorted_known = sorted(known)
          for i, entry in enumerate(sorted_known):
              hard_cap = sorted_known[i + 1] if i + 1 < len(sorted_known) else hi
-@@ -2203,9 +2216,103 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
+@@ -2203,9 +2223,103 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
                  data, load_addr, size, entry, hard_cap, producer_ranges,
                  allow_cross_producer_calls)
              covered |= walk['visited']
@@ -142,7 +156,7 @@ index 372125c5..0084785f 100644
          if not promoted:
              break
          # Promote ONE orphan per iteration (lowest address first): its walk
-@@ -3840,9 +3947,14 @@ def served_static_variant_keys(parts) -> set:
+@@ -3840,9 +3954,14 @@ def served_static_variant_keys(parts) -> set:
  
      Coverage is per byte-variant: a part serves an address only for the image
      it was compiled from, because the dispatcher's CRC gate rejects that
@@ -159,7 +173,7 @@ index 372125c5..0084785f 100644
  
  
  def select_static_fragment_demands(requested_keys, parts) -> list:
-@@ -6268,10 +6380,66 @@ def static_capture_job(cap: dict, args, toml: dict, forced_interiors: set,
+@@ -6268,10 +6387,66 @@ def static_capture_job(cap: dict, args, toml: dict, forced_interiors: set,
  def _static_capture_job(cap, args, toml, forced_interiors, static_out, result):
      # Runs in a worker process too, so it sets its image segment itself.
      with image_segment(segment_of(int(cap['load_addr'], 16))):
@@ -226,7 +240,7 @@ index 372125c5..0084785f 100644
  def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
                                     static_out, result):
      load_addr = int(cap['load_addr'], 16)
-@@ -6318,6 +6486,8 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+@@ -6318,6 +6493,8 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
               if guard_bytes else ''))
      print(f'  seeds: {len(seeds)}  mode: static -> {static_out}')
      print_seed_audit(seed_audit)
@@ -235,7 +249,7 @@ index 372125c5..0084785f 100644
  
      root_seeds = [
          seed for seed in seeds
-@@ -6390,6 +6560,9 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+@@ -6390,6 +6567,9 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
              print('  GENERATED-C AUDIT FAILED\n')
              fail('audit', f'{len(c_audit["unknown_bad"])} unknown_bad, '
                            f'{len(c_audit["unsupported_todo_addrs"])} unsupported')
@@ -245,7 +259,7 @@ index 372125c5..0084785f 100644
              return
          if not ranges_src:
              print('  STATIC RANGE AUDIT FAILED: no _full.ranges manifest\n')
-@@ -6428,6 +6601,20 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+@@ -6428,6 +6608,20 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
                      'crc': code_crc,
                      'ranges': ranges,
                  })
@@ -266,7 +280,7 @@ index 372125c5..0084785f 100644
          result['part'] = {
              'src': src,
              'variants': variants,
-@@ -6437,6 +6624,7 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
+@@ -6437,6 +6631,7 @@ def _static_capture_job_in_segment(cap, args, toml, forced_interiors,
              'symbols': symbols,
              'ids_by_addr': ids_by_addr,
              'continuation_owners': continuation_owners,
@@ -274,7 +288,7 @@ index 372125c5..0084785f 100644
          }
          print(f'  recompiled: {len(func_addrs)} functions, '
                f'{len(variants)} exact identities\n')
-@@ -8054,6 +8242,10 @@ def main():
+@@ -8054,6 +8249,10 @@ def main():
                              'crc': code_crc,
                              'ranges': ranges,
                          })

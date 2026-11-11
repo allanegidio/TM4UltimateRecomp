@@ -23971,8 +23971,8 @@ block_800671D0:
 #ifdef PSX_COSIM
     cosim_instr(0x80067280u);
 #endif
-    { uint32_t _pgxa = cpu->gpr[0] + 30203; cpu->gpr[6] = (int32_t)(int8_t)psx_cyc_load_byte(cpu, cpu->gpr[0] + 30203, 6, 0x1u);
-    PGXP_LOAD(0x800675FBu, _pgxa, cpu->gpr[6]); }  /* 0x80067284: 0x800675FB */
+    { uint32_t _pgxa = cpu->gpr[0] + 10240; cpu->gpr[7] = (int32_t)(int8_t)psx_cyc_load_byte(cpu, cpu->gpr[0] + 10240, 7, 0x1u);
+    PGXP_LOAD(0x80072800u, _pgxa, cpu->gpr[7]); }  /* 0x80067284: 0x80072800 */
 #ifdef PSX_COSIM
     cosim_instr(0x80067284u);
 #endif
@@ -29140,8 +29140,8 @@ block_800671D0:
 #ifdef PSX_COSIM
     cosim_instr(0x80067280u);
 #endif
-    { uint32_t _pgxa = cpu->gpr[0] + 30203; cpu->gpr[6] = (int32_t)(int8_t)psx_cyc_load_byte(cpu, cpu->gpr[0] + 30203, 6, 0x1u);
-    PGXP_LOAD(0x800675FBu, _pgxa, cpu->gpr[6]); }  /* 0x80067284: 0x800675FB */
+    { uint32_t _pgxa = cpu->gpr[0] + 10240; cpu->gpr[7] = (int32_t)(int8_t)psx_cyc_load_byte(cpu, cpu->gpr[0] + 10240, 7, 0x1u);
+    PGXP_LOAD(0x80072800u, _pgxa, cpu->gpr[7]); }  /* 0x80067284: 0x80072800 */
 #ifdef PSX_COSIM
     cosim_instr(0x80067284u);
 #endif
